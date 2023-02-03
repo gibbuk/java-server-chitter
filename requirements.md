@@ -74,7 +74,8 @@ Expected response body = JSON:
 
 ### GET - /peeps
 Unit Tests:
-1. Should return all peeps and status code 200. 
+1. Should return all peeps and status code 200.
+2. Should return status code 204 if no peeps received.
 
 ### POST - /peeps
 1. should return the peep on successful creation and status code 200.
