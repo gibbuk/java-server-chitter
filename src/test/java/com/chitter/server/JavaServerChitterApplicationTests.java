@@ -1,0 +1,13 @@
+package com.chitter.server;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class JavaServerChitterApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
