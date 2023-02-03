@@ -58,13 +58,13 @@ Expected response body = JSON:
 ## Object Model for database
 
 
-| Object | Properties       |
-|--------|------------------|
-| Peep   | id @String*      |
-|        | username @String |
-|        | realName @string |
-|        | content @String  |
-|        | created @Date    |
+| Object | Properties        |
+|--------|-------------------|
+| Peep   | id @String*       |
+|        | username @String  |
+|        | realName @string  |
+|        | content @String   |
+|        | dateCreated @Date |
 
 
 
@@ -74,7 +74,7 @@ Expected response body = JSON:
 
 ### GET - /peeps
 Unit Tests:
-1. Should return all tutorials and status code 200. 
+1. Should return all peeps and status code 200. 
 
 ### POST - /peeps
 1. should return the peep on successful creation and status code 200.
