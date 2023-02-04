@@ -22,6 +22,10 @@ public class Peep {
         this.dateCreated = dateCreated;
     }
 
+    public String getId(){
+        return this._id;
+    }
+
     public String getUsername() {
         return username;
     }
@@ -52,5 +56,14 @@ public class Peep {
 
     public void setDateCreated(String dateCreated) {
         this.dateCreated = dateCreated;
+    }
+
+    @Override
+    public String toString(){
+        return "Peep [_id: "+this._id
+                +", username: "+this.username
+                +", realName: "+this.realName
+                +", content: "+this.content
+                +", dateCreated: "+this.dateCreated+"]";
     }
 }

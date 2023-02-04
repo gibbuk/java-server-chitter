@@ -54,6 +54,8 @@ Expected response body = JSON:
     }
 }
 ```
+Expected response if no peep content supplied `{ message: `Error: no content supplied` }` and status code 400.
+
  
 ## Object Model for database
 
@@ -75,8 +77,9 @@ Expected response body = JSON:
 ### GET - /peeps
 Unit Tests:
 1. Should return all peeps and status code 200.
-2. Should return status code 204 if no peeps received.
+2. Should return status code 204 if no peeps are in the database.
 
 ### POST - /peeps
-1. should return the peep on successful creation and status code 200.
+1. should return the peep on successful creation with a message and status code 200.
 2. should return an error message when no peep content supplied and status code 400.
+3. should return a status code 500 if an Exception is thrown

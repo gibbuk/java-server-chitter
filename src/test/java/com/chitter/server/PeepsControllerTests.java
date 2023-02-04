@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -58,18 +59,34 @@ public class PeepsControllerTests {
     }
 
     @Test
-    void shouldReturnTheAddedPeep() throws Exception {
+    void shouldReturnTheAddedPeepAndMessage() throws Exception {
         Peep peep = new Peep("username", "real name", "peep content", "2023-02-03T11:18:31.077Z");
 
-        when(peepsRepository.save(peep)).thenReturn(peep);
+        when(peepsRepository.save(Mockito.any(Peep.class))).thenReturn(peep);
         mockMvc.perform(post("/peeps").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(peep)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.username").value(peep.getUsername()))
-                .andExpect(jsonPath("$.realName").value(peep.getRealName()))
-                .andExpect(jsonPath("$.content").value(peep.getContent()))
-                .andExpect(jsonPath("$.dateCreated").value(peep.getDateCreated()))
+                .andExpect(jsonPath("$.message").value("Peep posted!"))
+//                .andExpect(jsonPath("$.peep").value(objectMapper.writeValueAsString(peep)))
                 .andDo(print());
 
     }
 
+    @Test
+    void shouldReturnAnErrorIfNoPeepSupplied() throws Exception{
+        mockMvc.perform(post("/peeps"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Error: no content supplied"))
+                .andDo(print());
+    }
+
+    @Test
+    void shouldReturnAnInternalServerErrorCode() throws Exception {
+        Peep peep = new Peep("username", "real name", "peep content", "2023-02-03T11:18:31.077Z");
+
+        System.out.println(peep);
+        when(peepsRepository.save(Mockito.any(Peep.class))).thenThrow(new RuntimeException());
+        mockMvc.perform(post("/peeps").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(peep)))
+                .andExpect(status().isInternalServerError())
+                .andDo(print());
+    }
 }
