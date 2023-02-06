@@ -178,3 +178,16 @@ Unit Tests:
 3. should return an error message when no user data supplied as part of request and status code 400;
 4. should return a status code 500 if an Exception is thrown
 5. should return an error message when the user details supplied are not valid.
+
+### POST - /register
+1. should return success message payload and status code 201 on receiving a valid request.
+2. should return an error message if the username is already taken and status code 403.
+3. should return an error message if the email is already taken and status code 403.
+4. should return an error message and status code 500 if an Exception is thrown.
+
+### POST - /login
+1. should return a payload of message and the user with status code 200 on receiving a valid request.
+2. should return a payload of an error message with status code 401 on an invalid request.
+3. should return a status code 500 if an Exception is thrown
+
+
