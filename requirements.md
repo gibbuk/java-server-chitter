@@ -18,6 +18,15 @@ so that I can pass them back to the presentational layer.
 As the server,
 I want to pass back usernames, names, peep content and time/date to the presentational layer,
 so that the presentational layer has the right information.
+
+As the server,
+I want to be able to receive post requests on a register route with user details,
+so that new users can sign up.
+
+As the server,
+I want to receive post requests on a login route with username and password,
+so that users can sign in.
+
 ```
 
 ## Expected Host and Port location of server
@@ -27,10 +36,12 @@ http://localhost:4000
 ```
 ## Summary of expected routes
 
-| Methods | Urls   | Actions            | 
-|---------|--------|--------------------|
-| GET     | /peeps | Retrieve all peeps |
-| POST    | /peeps | Create peep        |
+| Methods | Urls      | Actions            | 
+|---------|-----------|--------------------|
+| GET     | /peeps    | Retrieve all peeps |
+| POST    | /peeps    | Create peep        |
+| POST    | /register | Create new user    |
+| POST    | /login    | Authenticate user  |
 
 
 ### GET /peeps
@@ -39,11 +50,19 @@ Expected response body = JSON: `{[peeps]}`
 ### POST /peeps
 Expected request body = JSON:
 ```json
-{"peep": {
-  "username":"Test",
-  "realName":"Test User",
-  "content":"Another test peep",
-  "dateCreated":"2023-02-03T11:18:31.077Z"}
+{
+  "user":{
+    "_id":"639b28a0293b6eda8c5f20d1", 
+    "username":"Test", 
+    "name":"Test User", 
+    "email":"test@test.com", 
+    "password":"password"
+    },
+  "peep": {
+    "username":"Test",
+    "realName":"Test User",
+    "content":"Another test peep",
+    "dateCreated":"2023-02-06T12:17:35.102Z"}
 }
 ```
 
@@ -60,6 +79,75 @@ Expected response body = JSON:
 }
 ```
 Expected response if no peep content supplied `{ message: `Error: no content supplied` }` and status code 400.
+
+### POST /register
+Expected request body = JSON:
+```json
+{"newUser": {
+  "username":"AnotherUserToAdd",
+  "name":"Another User To Add",
+  "email":"anotherusertoadd@email.com",
+  "password":"password"}
+}
+```
+Expected successful response body = JSON:
+```json
+{
+  "message":"Sign up successful"
+}
+```
+Expected unsuccessful response body response = JSON:
+
+```json
+{
+  "message":"Username already taken"
+}
+```
+Or
+```json
+{
+  "message":"Email already taken"
+}
+```
+Or
+```json
+{
+  "message":"<some server message>"
+}
+```
+
+Expected
+
+### POST /login
+Expected request body = JSON:
+
+```json
+{
+  "username": "Test",
+  "password": "password"
+}
+```
+Excpected successful response body = JSON:
+```json
+{
+    "message": "Login success",
+    "user": {
+        "_id": "639b28a0293b6eda8c5f20d1",
+        "username": "Test",
+        "name": "Test User",
+        "email": "test@test.com",
+        "password": "password",
+        "__v": 0
+    }
+}
+```
+
+Expected unsuccessful response body = JSON:
+```json
+{
+    "message": "Details not found"
+}
+```
 
  
 ## Object Model for database
@@ -87,4 +175,6 @@ Unit Tests:
 ### POST - /peeps
 1. should return the peep on successful creation with a message and status code 200.
 2. should return an error message when no peep content supplied and status code 400.
-3. should return a status code 500 if an Exception is thrown
+3. should return an error message when no user data supplied as part of request and status code 400;
+4. should return a status code 500 if an Exception is thrown
+5. should return an error message when the user details supplied are not valid.
