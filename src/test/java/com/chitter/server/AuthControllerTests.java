@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.chitter.server.payload.request.LoginRequest;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ import com.chitter.server.controller.AuthController;
 import com.chitter.server.payload.request.NewUserRequest;
 import com.chitter.server.model.User;
 import com.chitter.server.repository.UserRepository;
+
+import java.util.Optional;
 
 
 @WebMvcTest(AuthController.class)
@@ -88,18 +91,55 @@ public class AuthControllerTests {
 
     // login route tests
 
-//    @Test
-//    void shouldReturnSuccessMessageAndUserOnReceivingValidRequest() throws Exception {
-//        User user = new User("username", "name", "email@email.com", "password");
-//        LoginRequest loginRequest = new LoginRequest(user.getUsername(), user.getPassword());
-//
-//        when(userRepository.findByUsername(loginRequest.getUsername())).thenReturn(user);
-//        mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(loginRequest)))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.message").value("Login success"))
-//                .andExpect(jsonPath("$.user")).value(objectMapper.writeValueAsString(user))
-//                .andDo(print());
-//    }
+    @Test
+    void shouldReturnSuccessMessageAndUserOnReceivingValidRequest() throws Exception {
+        User user = new User("username", "name", "email@email.com", "password");
+        LoginRequest loginRequest = new LoginRequest(user.getUsername(), user.getPassword());
+
+        when(userRepository.findByUsername(loginRequest.getUsername())).thenReturn(Optional.of(user));
+        mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Login success"))
+                .andExpect(jsonPath("$.user").value(objectMapper.writeValueAsString(user)))
+                .andDo(print());
+    }
+
+    @Test
+    void shouldReturnErrorMessageReceivingInvalidPassword() throws Exception {
+        User user = new User("username", "name", "email@email.com", "password");
+        LoginRequest loginRequest = new LoginRequest(user.getUsername(), "wrong password");
+
+        when(userRepository.findByUsername(loginRequest.getUsername())).thenReturn(Optional.of(user));
+        mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Details not found"))
+                .andExpect(jsonPath("$.user").isEmpty())
+                .andDo(print());
+    }
+
+    @Test
+    void shouldReturnErrorMessageReceivingNonExistentUser() throws Exception {
+        LoginRequest loginRequest = new LoginRequest("nonexistentUser", "wrong password");
+
+        when(userRepository.findByUsername(loginRequest.getUsername())).thenReturn(Optional.empty());
+        mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Details not found"))
+                .andExpect(jsonPath("$.user").isEmpty())
+                .andDo(print());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorIfExceptionThrown() throws Exception {
+        LoginRequest loginRequest = new LoginRequest("nonexistentUser", "wrong password");
+
+        when(userRepository.findByUsername(loginRequest.getUsername())).thenThrow(new RuntimeException());
+        mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isInternalServerError())
+//                .andExpect(jsonPath("$.message").value("Details not found"))
+//                .andExpect(jsonPath("$.user").isEmpty())
+                .andDo(print());
+    }
 
 
 

@@ -191,7 +191,8 @@ Unit Tests:
 
 ### POST - /login
 1. should return a payload of message and the user with status code 200 on receiving a valid request.
-2. should return a payload of an error message with status code 401 on an invalid request.
-3. should return a status code 500 if an Exception is thrown
+2. should return a payload of an error message with status code 400 on receiving invalid password.
+3. should return a payload of an error message with status code 400 when no user in database
+4. should return a status code 500 if an Exception is thrown
 
 
