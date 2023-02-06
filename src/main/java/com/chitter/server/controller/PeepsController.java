@@ -2,8 +2,7 @@ package com.chitter.server.controller;
 
 import com.chitter.server.model.Peep;
 import com.chitter.server.repository.PeepsRepository;
-import com.chitter.server.response.ResponseObject;
-import org.apache.coyote.Response;
+import com.chitter.server.payload.response.PeepResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,14 +34,14 @@ public class PeepsController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponseObject> createPeep(@RequestBody(required = false) Peep peep){
+    public ResponseEntity<PeepResponse> createPeep(@RequestBody(required = false) Peep peep){
         try{
 
-            ResponseObject responseObject;
+            PeepResponse peepResponse;
 
             if (peep == null) {
-                responseObject = new ResponseObject("Error: no content supplied", null);
-                return new ResponseEntity<>(responseObject, HttpStatus.BAD_REQUEST);
+                peepResponse = new PeepResponse("Error: no content supplied", null);
+                return new ResponseEntity<>(peepResponse, HttpStatus.BAD_REQUEST);
             }
 
             Peep savedPeep = peepsRepository.save(
@@ -51,9 +50,9 @@ public class PeepsController {
                         peep.getContent(),
                         peep.getDateCreated()));
 
-            responseObject = new ResponseObject("Peep posted!", savedPeep);
+            peepResponse = new PeepResponse("Peep posted!", savedPeep);
 
-            return new ResponseEntity<>(responseObject, HttpStatus.CREATED);
+            return new ResponseEntity<>(peepResponse, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }

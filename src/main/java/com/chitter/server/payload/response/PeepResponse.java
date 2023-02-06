@@ -1,14 +1,14 @@
-package com.chitter.server.response;
+package com.chitter.server.payload.response;
 
 import com.chitter.server.model.Peep;
 
-public class ResponseObject {
+public class PeepResponse {
 
     private String message;
 
     private Peep peep;
 
-    public ResponseObject(String message, Peep peep){
+    public PeepResponse(String message, Peep peep){
         this.message = message;
         this.peep = peep;
     }
