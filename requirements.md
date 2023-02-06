@@ -78,7 +78,11 @@ Expected response body = JSON:
     }
 }
 ```
-Expected response if no peep content supplied `{ message: `Error: no content supplied` }` and status code 400.
+Expected response if no peep content supplied: `{ message: "Error: no content supplied" }` and status code 400.
+
+Expected response if no user supplied: `{ message: "Error: no valid user" }`
+
+Expected response if user is supplied but password does not match that in database: `{ message: "Error: no valid user" }`
 
 ### POST /register
 Expected request body = JSON:
@@ -181,7 +185,8 @@ Unit Tests:
 2. should return an error message when no peep content supplied and status code 400.
 3. should return an error message when no user data supplied as part of request and status code 400;
 4. should return a status code 500 if an Exception is thrown
-5. should return an error message when the user details supplied are not valid.
+5. should return an error message when the user password supplied is not valid.
+6. should return an error message if the user supplied is not registered.
 
 ### POST - /register
 1. should return success message payload and status code 201 on receiving a valid request.

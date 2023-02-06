@@ -5,6 +5,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import com.chitter.server.model.User;
+import com.chitter.server.payload.request.PeepRequest;
+import com.chitter.server.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import com.chitter.server.controller.PeepsController;
 import com.chitter.server.model.Peep;
@@ -27,6 +31,9 @@ public class PeepsControllerTests {
 
     @MockBean
     private PeepsRepository peepsRepository;
+
+    @MockBean
+    private UserRepository userRepository;
 
     @Autowired
     private MockMvc mockMvc;
@@ -60,10 +67,12 @@ public class PeepsControllerTests {
 
     @Test
     void shouldReturnTheAddedPeepAndMessage() throws Exception {
+        User user = new User("username", "real name", "email@email.com", "password");
         Peep peep = new Peep("username", "real name", "peep content", "2023-02-03T11:18:31.077Z");
+        PeepRequest peepRequest = new PeepRequest(user, peep);
 
         when(peepsRepository.save(Mockito.any(Peep.class))).thenReturn(peep);
-        mockMvc.perform(post("/peeps").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(peep)))
+        mockMvc.perform(post("/peeps").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(peepRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.message").value("Peep posted!"))
 //                .andExpect(jsonPath("$.peep").value(objectMapper.writeValueAsString(peep)))
@@ -72,7 +81,7 @@ public class PeepsControllerTests {
     }
 
     @Test
-    void shouldReturnAnErrorIfNoPeepSupplied() throws Exception{
+    void shouldReturnAnErrorIfNoPeepSupplied() throws Exception {
         mockMvc.perform(post("/peeps"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Error: no content supplied"))
@@ -80,13 +89,60 @@ public class PeepsControllerTests {
     }
 
     @Test
-    void shouldReturnAnInternalServerErrorCode() throws Exception {
+    void shouldReturnAnErrorIfNoUserCredentialsSupplied() throws Exception {
         Peep peep = new Peep("username", "real name", "peep content", "2023-02-03T11:18:31.077Z");
+        PeepRequest peepRequest = new PeepRequest(null, peep);
 
-        System.out.println(peep);
-        when(peepsRepository.save(Mockito.any(Peep.class))).thenThrow(new RuntimeException());
-        mockMvc.perform(post("/peeps").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(peep)))
+        mockMvc.perform(post("/peeps").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(peepRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Error: no valid user"))
+                .andDo(print());
+
+
+    }
+
+    @Test
+    void shouldReturnAnErrorIfUserPasswordNotValid() throws Exception {
+        User user = new User("username", "real name", "email@email.com", "password");
+        Peep peep = new Peep("username", "real name", "peep content", "2023-02-03T11:18:31.077Z");
+        PeepRequest peepRequest = new PeepRequest(user, peep);
+
+        Optional<User> userToReturn = Optional.of(new User("username", "real name", "email@email.com", "differentpassword"));
+
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(userToReturn);
+        when(peepsRepository.save(Mockito.any(Peep.class))).thenReturn(peep);
+        mockMvc.perform(post("/peeps").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(peepRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Error: no valid user"))
+                .andDo(print());
+    }
+
+    @Test
+    void shouldReturnAnErrorIfUserNotFoundInDatabase() throws Exception {
+        User user = new User("username", "real name", "email@email.com", "password");
+        Peep peep = new Peep("username", "real name", "peep content", "2023-02-03T11:18:31.077Z");
+        PeepRequest peepRequest = new PeepRequest(user, peep);
+
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.empty());
+        when(peepsRepository.save(Mockito.any(Peep.class))).thenReturn(peep);
+        mockMvc.perform(post("/peeps").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(peepRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Error: no valid user"))
+                .andDo(print());
+    }
+
+    @Test
+    void shouldReturnAnInternalServerErrorCode() throws Exception {
+        User user = new User("username", "real name", "email@email.com", "password");
+        Peep peep = new Peep("username", "real name", "peep content", "2023-02-03T11:18:31.077Z");
+        PeepRequest peepRequest = new PeepRequest(user, peep);
+        RuntimeException exception = new RuntimeException("Exception message");
+
+        when(peepsRepository.save(Mockito.any(Peep.class))).thenThrow(exception);
+        mockMvc.perform(post("/peeps").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(peepRequest)))
                 .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value(exception.getMessage()))
+                .andExpect(jsonPath("$.peep").isEmpty())
                 .andDo(print());
     }
 }
