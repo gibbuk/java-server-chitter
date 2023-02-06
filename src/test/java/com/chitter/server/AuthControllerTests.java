@@ -96,11 +96,16 @@ public class AuthControllerTests {
         User user = new User("username", "name", "email@email.com", "password");
         LoginRequest loginRequest = new LoginRequest(user.getUsername(), user.getPassword());
 
+        String userAsJson = objectMapper.writeValueAsString(user);
+
         when(userRepository.findByUsername(loginRequest.getUsername())).thenReturn(Optional.of(user));
         mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Login success"))
-                .andExpect(jsonPath("$.user").value(objectMapper.writeValueAsString(user)))
+                .andExpect(jsonPath("$.user.username").value(user.getUsername()))
+                .andExpect(jsonPath("$.user.name").value(user.getName()))
+                .andExpect(jsonPath("$.user.email").value(user.getEmail()))
+                .andExpect(jsonPath("$.user.password").value(user.getPassword()))
                 .andDo(print());
     }
 
@@ -136,8 +141,8 @@ public class AuthControllerTests {
         when(userRepository.findByUsername(loginRequest.getUsername())).thenThrow(new RuntimeException());
         mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isInternalServerError())
-//                .andExpect(jsonPath("$.message").value("Details not found"))
-//                .andExpect(jsonPath("$.user").isEmpty())
+                .andExpect(jsonPath("$.message").value("Something went wrong"))
+                .andExpect(jsonPath("$.user").isEmpty())
                 .andDo(print());
     }
 
