@@ -185,8 +185,8 @@ Unit Tests:
 
 ### POST - /register
 1. should return success message payload and status code 201 on receiving a valid request.
-2. should return an error message if the username is already taken and status code 403.
-3. should return an error message if the email is already taken and status code 403.
+2. should return an error message if the username is already taken and status code 400.
+3. should return an error message if the email is already taken and status code 400.
 4. should return an error message and status code 500 if an Exception is thrown.
 
 ### POST - /login

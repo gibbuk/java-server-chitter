@@ -33,6 +33,9 @@ public class AuthControllerTests {
     private ObjectMapper objectMapper;
 
 
+
+
+    // Register route tests
     @Test
     void shouldReturnASuccessMessagePayloadOnReceivingValidRequest() throws Exception {
         User user = new User("username", "name", "email@email.com", "password");
@@ -55,6 +58,30 @@ public class AuthControllerTests {
                 .andExpect(jsonPath("$.message").value(e.getMessage()))
                 .andDo(print());
     }
+
+    @Test
+    void shouldReturnAnErrorMessageIfUsernameTaken() throws Exception {
+        User user = new User("username", "name", "email@email.com", "password");
+
+        when(userRepository.existsByUsername(user.getUsername())).thenReturn(true);
+        mockMvc.perform(post("/register").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(user)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Username already taken"))
+                .andDo(print());
+    }
+
+    @Test
+    void shouldReturnAnErrorMessageIfEmailAlreadyTaken() throws Exception {
+        User user = new User("username", "name", "email@email.com", "password");
+
+        when(userRepository.existsByEmail(user.getEmail())).thenReturn(true);
+        mockMvc.perform(post("/register").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(user)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Email already taken"))
+                .andDo(print());
+    }
+
+    // signin route tests
 
 
 

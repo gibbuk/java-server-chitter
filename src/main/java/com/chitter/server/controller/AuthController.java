@@ -26,6 +26,14 @@ public class AuthController {
 
         try {
 
+            if (userRepository.existsByUsername(user.getUsername())) {
+                return new ResponseEntity<>(new MessageResponse("Username already taken"), HttpStatus.BAD_REQUEST);
+            }
+
+            if (userRepository.existsByEmail(user.getEmail())) {
+                return new ResponseEntity<>(new MessageResponse("Email already taken"), HttpStatus.BAD_REQUEST);
+            }
+
             userRepository.save(new User(user.getUsername(), user.getName(), user.getEmail(), user.getPassword()));
 
             MessageResponse message = new MessageResponse("Sign up successful");
