@@ -2,6 +2,7 @@ package com.chitter.server.controller;
 
 
 import com.chitter.server.model.User;
+import com.chitter.server.payload.request.NewUserRequest;
 import com.chitter.server.payload.response.MessageResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,9 +23,11 @@ public class AuthController {
     UserRepository userRepository;
 
     @PostMapping("/register")
-    public ResponseEntity<MessageResponse> registerUser(@RequestBody User user) {
+    public ResponseEntity<MessageResponse> registerUser(@RequestBody NewUserRequest newUserRequest) {
 
         try {
+
+            User user = newUserRequest.getNewUser();
 
             if (userRepository.existsByUsername(user.getUsername())) {
                 return new ResponseEntity<>(new MessageResponse("Username already taken"), HttpStatus.BAD_REQUEST);
