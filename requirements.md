@@ -20,6 +20,11 @@ I want to pass back usernames, names, peep content and time/date to the presenta
 so that the presentational layer has the right information.
 ```
 
+## Expected Host and Port location of server
+
+```
+http://localhost:4000
+```
 ## Summary of expected routes
 
 | Methods | Urls   | Actions            | 
