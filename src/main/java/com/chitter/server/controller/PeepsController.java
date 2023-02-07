@@ -46,16 +46,12 @@ public class PeepsController {
     public ResponseEntity<PeepResponse> createPeep(@RequestBody(required = false) PeepRequest peepRequest){
         try{
 
-            PeepResponse peepResponse;
-
             if (peepRequest.getPeep() == null) {
-                peepResponse = new PeepResponse("Error: no content supplied", null);
-                return new ResponseEntity<>(peepResponse, HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new PeepResponse("Error: no content supplied", null), HttpStatus.BAD_REQUEST);
             }
 
             if (peepRequest.getUser() == null) {
-                peepResponse = new PeepResponse("Error: no valid user", null);
-                return new ResponseEntity<>(peepResponse, HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new PeepResponse("Error: no valid user", null), HttpStatus.BAD_REQUEST);
             }
 
             Optional<User> user = userRepository.findByUsername(peepRequest.getUser().getUsername());
@@ -67,17 +63,13 @@ public class PeepsController {
                             peepRequest.getPeep().getContent(),
                             peepRequest.getPeep().getDateCreated()));
 
-                peepResponse = new PeepResponse("Peep posted!", savedPeep);
-
-                return new ResponseEntity<>(peepResponse, HttpStatus.CREATED);
+                return new ResponseEntity<>(new PeepResponse("Peep posted!", savedPeep), HttpStatus.CREATED);
             }
 
-            peepResponse = new PeepResponse("Error: no valid user", null);
-            return new ResponseEntity<>(peepResponse, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new PeepResponse("Error: no valid user", null), HttpStatus.BAD_REQUEST);
 
         } catch (Exception e) {
-            PeepResponse response = new PeepResponse(e.getMessage(), null);
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new PeepResponse(e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
 
