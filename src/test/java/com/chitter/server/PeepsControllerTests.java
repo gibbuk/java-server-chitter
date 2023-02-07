@@ -71,20 +71,28 @@ public class PeepsControllerTests {
         Peep peep = new Peep("username", "real name", "peep content", "2023-02-03T11:18:31.077Z");
         PeepRequest peepRequest = new PeepRequest(user, peep);
 
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(Optional.of(user));
         when(peepsRepository.save(Mockito.any(Peep.class))).thenReturn(peep);
         mockMvc.perform(post("/peeps").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(peepRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.message").value("Peep posted!"))
-//                .andExpect(jsonPath("$.peep").value(objectMapper.writeValueAsString(peep)))
+                .andExpect(jsonPath("$.peep.username").value(peep.getUsername()))
+                .andExpect(jsonPath("$.peep.realName").value(peep.getRealName()))
+                .andExpect(jsonPath("$.peep.content").value(peep.getContent()))
+                .andExpect(jsonPath("$.peep.dateCreated").value(peep.getDateCreated()))
                 .andDo(print());
 
     }
 
     @Test
     void shouldReturnAnErrorIfNoPeepSupplied() throws Exception {
-        mockMvc.perform(post("/peeps"))
+        User user = new User("username", "real name", "email@email.com", "password");
+        PeepRequest peepRequest = new PeepRequest(user, null);
+
+        mockMvc.perform(post("/peeps").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(peepRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Error: no content supplied"))
+                .andExpect(jsonPath("$.peep").isEmpty())
                 .andDo(print());
     }
 
@@ -138,7 +146,7 @@ public class PeepsControllerTests {
         PeepRequest peepRequest = new PeepRequest(user, peep);
         RuntimeException exception = new RuntimeException("Exception message");
 
-        when(peepsRepository.save(Mockito.any(Peep.class))).thenThrow(exception);
+        when(userRepository.findByUsername(user.getUsername())).thenThrow(exception);
         mockMvc.perform(post("/peeps").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(peepRequest)))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.message").value(exception.getMessage()))
