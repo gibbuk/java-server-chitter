@@ -41,9 +41,7 @@ public class AuthController {
 
             userRepository.save(new User(user.getUsername(), user.getName(), user.getEmail(), user.getPassword()));
 
-            MessageResponse message = new MessageResponse("Sign up successful");
-
-            return new ResponseEntity<>(message, HttpStatus.CREATED);
+            return new ResponseEntity<>(new MessageResponse("Sign up successful"), HttpStatus.CREATED);
 
         } catch(Exception e){
             return new ResponseEntity<>(new MessageResponse(e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -56,19 +54,14 @@ public class AuthController {
         try {
             Optional<User> user = userRepository.findByUsername(loginRequest.getUsername());
 
-            LoginResponse response;
-
             if (user.isPresent() && loginRequest.getPassword().equals(user.get().getPassword())) {
-                response = new LoginResponse("Login success", user.get());
-                return new ResponseEntity<>(response, HttpStatus.OK);
+                return new ResponseEntity<>(new LoginResponse("Login success", user.get()), HttpStatus.OK);
             }
 
-            response = new LoginResponse("Details not found", null);
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new LoginResponse("Details not found", null), HttpStatus.BAD_REQUEST);
 
         } catch (Exception e) {
-            LoginResponse response = new LoginResponse("Something went wrong", null);
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new LoginResponse("Something went wrong", null), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
