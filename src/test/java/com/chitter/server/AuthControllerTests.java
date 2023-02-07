@@ -6,6 +6,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.chitter.server.payload.request.LoginRequest;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,12 +38,22 @@ public class AuthControllerTests {
     private ObjectMapper objectMapper;
 
 
+    private User user;
+
+    @BeforeEach
+    void init() {
+        user = new User("username", "name", "email@email.com", "password");
+    }
+
+    @AfterEach
+    void tearDown() {
+        user = null;
+    }
 
 
     // Register route tests
     @Test
     void shouldReturnASuccessMessagePayloadOnReceivingValidRequest() throws Exception {
-        User user = new User("username", "name", "email@email.com", "password");
         NewUserRequest newUserRequest = new NewUserRequest(user);
 
         when(userRepository.save(Mockito.any(User.class))).thenReturn(user);
@@ -53,7 +65,6 @@ public class AuthControllerTests {
 
     @Test
     void shouldReturnInternalServerErrorInEventOfException() throws Exception {
-        User user = new User("username", "name", "email@email.com", "password");
         NewUserRequest newUserRequest = new NewUserRequest(user);
         RuntimeException e = new RuntimeException("Server Message");
 
@@ -66,7 +77,6 @@ public class AuthControllerTests {
 
     @Test
     void shouldReturnAnErrorMessageIfUsernameTaken() throws Exception {
-        User user = new User("username", "name", "email@email.com", "password");
         NewUserRequest newUserRequest = new NewUserRequest(user);
 
         when(userRepository.existsByUsername(user.getUsername())).thenReturn(true);
@@ -78,7 +88,6 @@ public class AuthControllerTests {
 
     @Test
     void shouldReturnAnErrorMessageIfEmailAlreadyTaken() throws Exception {
-        User user = new User("username", "name", "email@email.com", "password");
         NewUserRequest newUserRequest = new NewUserRequest(user);
 
         when(userRepository.existsByEmail(user.getEmail())).thenReturn(true);
@@ -92,10 +101,7 @@ public class AuthControllerTests {
 
     @Test
     void shouldReturnSuccessMessageAndUserOnReceivingValidRequest() throws Exception {
-        User user = new User("username", "name", "email@email.com", "password");
         LoginRequest loginRequest = new LoginRequest(user.getUsername(), user.getPassword());
-
-        String userAsJson = objectMapper.writeValueAsString(user);
 
         when(userRepository.findByUsername(loginRequest.getUsername())).thenReturn(Optional.of(user));
         mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(loginRequest)))
@@ -110,7 +116,6 @@ public class AuthControllerTests {
 
     @Test
     void shouldReturnErrorMessageReceivingInvalidPassword() throws Exception {
-        User user = new User("username", "name", "email@email.com", "password");
         LoginRequest loginRequest = new LoginRequest(user.getUsername(), "wrong password");
 
         when(userRepository.findByUsername(loginRequest.getUsername())).thenReturn(Optional.of(user));
@@ -135,7 +140,7 @@ public class AuthControllerTests {
 
     @Test
     void shouldReturnInternalServerErrorIfExceptionThrown() throws Exception {
-        LoginRequest loginRequest = new LoginRequest("nonexistentUser", "wrong password");
+        LoginRequest loginRequest = new LoginRequest(user.getUsername(), user.getPassword());
 
         when(userRepository.findByUsername(loginRequest.getUsername())).thenThrow(new RuntimeException());
         mockMvc.perform(post("/login").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(loginRequest)))
