@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -58,10 +59,10 @@ public class PeepsController {
 
             if (user.isPresent() && peepRequest.getUser().getPassword().equals(user.get().getPassword())){
                 Peep savedPeep = peepsRepository.save(
-                    new Peep(peepRequest.getPeep().getUsername(),
-                            peepRequest.getPeep().getRealName(),
+                    new Peep(user.get().getUsername(),
+                            user.get().getName(),
                             peepRequest.getPeep().getContent(),
-                            peepRequest.getPeep().getDateCreated()));
+                            LocalDateTime.now().toString()));
 
                 return new ResponseEntity<>(new PeepResponse("Peep posted!", savedPeep), HttpStatus.CREATED);
             }
