@@ -58,4 +58,16 @@ I decided I would fix these both in the frontend, 1. because it is a frontend de
 
 ---
 
+### 08/02/2023
 
+I completed fixing and testing elements of the frontend implementation and that it and this server worked together. I also confirmed that I could amend `application.properties` to use a prexisting Mongo Atlas cloud instance and this server could swap out and replace the NodeJS server whilst retaining the existing database.
+
+With this done I carried out a small project review which included some learnings about preferred implementations of the data models/database structure and request/response payloads. I also identified additional functionality to evolve over time.
+
+My final work before the client interview was to implement a `development` branch with the following:
+- Updated `payload.request` and `.response` classes to be simpler and add validation constraints to them.
+- Updated existing GET and POST routes to use validation of `RequestBody`s and their `ResponseEntity`s allowing for cleaner and more robust code.
+- Updated data models to remove duplicate storing of information.
+- Added `put` and `delete` PeepController mapping to add functionality for users to update or delete their own peeps.
+
+Unfortunately time didn't allow me to use a TDD approach and the unit tests require fixing. Carried out testing with Postman.

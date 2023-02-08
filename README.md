@@ -19,11 +19,13 @@ This product is a `Java` and `Spring Boot` implementation of the backend server 
 
 I thought this would be a really interesting learning experience to go back to previously working solution and carrying out the equivalent of a very significant migration from one server framework to the other. It would help me compare and contrast the similarities between frameworks on different platforms and let me reevaluate previous design decisions that I made in the past as a less experienced developer. 
 
-- [Here](https://github.com/gibbuk/chitter-client) is a link to the accompanying frontend app for this project.
-
+- [Here](https://github.com/gibbuk/chitter-client) is a link to the accompanying frontend app for the `main` branch of this project.
 - [Here](Log.md) is a link to a log of my reflections on my development process.
-
 - [Here](requirements.md) is a link to requirements in the form of user stories, expected API routes and tests.
+
+There are two branches to this project:
+- `main` was developed using TDD and works with the frontend app above. The CRUD functions are limited to Creation and Read only.
+- `development` has an improved data model, Request validation and Update and Delete functionality but was not developed with a TDD approach but was tested via Postman.
 
 ---
 
