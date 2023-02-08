@@ -1,7 +1,7 @@
 package com.chitter.server.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "users")
@@ -12,12 +12,11 @@ public class User {
 
     private String username;
 
-
     private String name;
 
     private String email;
 
-
+    @JsonIgnore
     private String password;
 
 
@@ -28,6 +27,10 @@ public class User {
         this.name = name;
         this.email = email;
         this.password = password;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getUsername() {

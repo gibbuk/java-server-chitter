@@ -1,21 +1,25 @@
 package com.chitter.server.controller;
 
-import com.chitter.server.model.Peep;
-import com.chitter.server.model.User;
-import com.chitter.server.payload.request.PeepRequest;
-import com.chitter.server.payload.response.MessageResponse;
-import com.chitter.server.repository.PeepsRepository;
-import com.chitter.server.payload.response.PeepResponse;
-import com.chitter.server.repository.UserRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import com.chitter.server.model.Peep;
+import com.chitter.server.model.User;
+import com.chitter.server.payload.request.DeletePeepRequest;
+import com.chitter.server.payload.request.PeepRequest;
+import com.chitter.server.payload.request.UpdatePeepRequest;
+import com.chitter.server.payload.response.PeepDataTransferObject;
+import com.chitter.server.repository.PeepsRepository;
+import com.chitter.server.repository.UserRepository;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -29,48 +33,96 @@ public class PeepsController {
     UserRepository userRepository;
 
     @GetMapping
-    public ResponseEntity<List<Peep>> getAllPeeps(){
+    public ResponseEntity<List<PeepDataTransferObject>> getAllPeeps(){
         try {
-            List<Peep> peeps = new ArrayList<Peep>();
-            peepsRepository.findAll().forEach(peep -> peeps.add(peep));
+            List<PeepDataTransferObject> peeps = new ArrayList<PeepDataTransferObject>();
+            peepsRepository.findAll().forEach(peep -> {
+                    Optional<User> foundUser = userRepository.findById(peep.getUserId());
+                    User user = foundUser.get();
+                    peeps.add(new PeepDataTransferObject(
+                            peep.getId(),
+                            user.getId(),
+                            user.getUsername(),
+                            user.getName(),
+                            peep.getContent(),
+                            peep.getDateCreated()));
+            });
 
             if(peeps.isEmpty()){
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
             return new ResponseEntity<>(peeps, HttpStatus.OK);
+
+
+
         } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PostMapping
-    public ResponseEntity<PeepResponse> createPeep(@RequestBody(required = false) PeepRequest peepRequest){
+    public ResponseEntity<Peep> createPeep(@RequestBody @Valid PeepRequest request){
         try{
 
-            if (peepRequest.getPeep() == null) {
-                return new ResponseEntity<>(new PeepResponse("Error: no content supplied", null), HttpStatus.BAD_REQUEST);
+            Optional<User> foundUser = userRepository.findById(request.getUserId());
+
+            if (foundUser.isPresent() && request.getPassword().equals(foundUser.get().getPassword())){
+
+                User user = foundUser.get();
+
+                Peep peep = new Peep(user.getId(),
+                        request.getContent(),
+                        LocalDateTime.now().toString());
+
+                return new ResponseEntity<>(peepsRepository.save(peep), HttpStatus.CREATED);
             }
 
-            if (peepRequest.getUser() == null) {
-                return new ResponseEntity<>(new PeepResponse("Error: no valid user", null), HttpStatus.BAD_REQUEST);
-            }
-
-            Optional<User> user = userRepository.findByUsername(peepRequest.getUser().getUsername());
-
-            if (user.isPresent() && peepRequest.getUser().getPassword().equals(user.get().getPassword())){
-                Peep savedPeep = peepsRepository.save(
-                    new Peep(user.get().getUsername(),
-                            user.get().getName(),
-                            peepRequest.getPeep().getContent(),
-                            LocalDateTime.now().toString()));
-
-                return new ResponseEntity<>(new PeepResponse("Peep posted!", savedPeep), HttpStatus.CREATED);
-            }
-
-            return new ResponseEntity<>(new PeepResponse("Error: no valid user", null), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 
         } catch (Exception e) {
-            return new ResponseEntity<>(new PeepResponse(e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping
+    public ResponseEntity<HttpStatus> deletePeep(@RequestBody @Valid DeletePeepRequest request) {
+        try {
+            Optional<User> user = userRepository.findById(request.getUserId());
+            Optional<Peep> peep = peepsRepository.findById(request.getPeepId());
+
+            if (user.isPresent() && peep.isPresent()){
+                if (user.get().getPassword().equals(request.getPassword())){
+                    peepsRepository.deleteById(request.getPeepId());
+                    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                }
+            }
+
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        } catch (Exception e) {
+            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+    @PutMapping
+    public ResponseEntity<Peep> updatePeep(@RequestBody @Valid UpdatePeepRequest request){
+        try{
+            Optional<User> foundUser = userRepository.findById(request.getUserId());
+            Optional<Peep> foundPeep = peepsRepository.findById(request.getPeepId());
+
+            if (foundUser.isPresent() && foundPeep.isPresent()){
+                if (foundUser.get().getPassword().equals(request.getPassword())){
+                    Peep peep = foundPeep.get();
+                    peep.setContent(request.getContent());
+                    return new ResponseEntity<>(peepsRepository.save(peep), HttpStatus.OK);
+                }
+            }
+
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        } catch (Exception e){
+            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
 

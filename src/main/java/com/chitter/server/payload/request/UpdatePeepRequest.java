@@ -2,8 +2,7 @@ package com.chitter.server.payload.request;
 
 import javax.validation.constraints.NotBlank;
 
-public class PeepRequest {
-
+public class UpdatePeepRequest {
     @NotBlank
     private String userId;
 
@@ -11,13 +10,17 @@ public class PeepRequest {
     private String password;
 
     @NotBlank
+    private String peepId;
+
+    @NotBlank
     private String content;
 
-    public PeepRequest() {}
+    public UpdatePeepRequest(){}
 
-    public PeepRequest(String userId, String password, String content) {
+    public UpdatePeepRequest(String userId, String password, String peepId, String content) {
         this.userId = userId;
         this.password = password;
+        this.peepId = peepId;
         this.content = content;
     }
 
@@ -27,6 +30,10 @@ public class PeepRequest {
 
     public String getPassword() {
         return password;
+    }
+
+    public String getPeepId() {
+        return peepId;
     }
 
     public String getContent() {

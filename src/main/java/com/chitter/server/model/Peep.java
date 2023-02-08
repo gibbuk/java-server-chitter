@@ -7,39 +7,29 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Peep {
 
     @Id
-    private String _id;
-    private String username;
-    private String realName;
+    private String id;
+    private String userId;
     private String content;
     private String dateCreated;
 
     public Peep(){}
 
-    public Peep(String username, String realName, String content, String dateCreated){
-        this.username = username;
-        this.realName = realName;
+    public Peep(String userId, String content, String dateCreated){
+        this.userId = userId;
         this.content = content;
         this.dateCreated = dateCreated;
     }
 
     public String getId(){
-        return this._id;
+        return this.id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getRealName() {
-        return realName;
-    }
-
-    public void setRealName(String realName) {
-        this.realName = realName;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getContent() {
@@ -60,9 +50,8 @@ public class Peep {
 
     @Override
     public String toString(){
-        return "Peep [_id: "+this._id
-                +", username: "+this.username
-                +", realName: "+this.realName
+        return "Peep [_id: "+this.id
+                +", username: "+this.userId
                 +", content: "+this.content
                 +", dateCreated: "+this.dateCreated+"]";
     }
